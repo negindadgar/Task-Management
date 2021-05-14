@@ -14,99 +14,30 @@
 use App\Article;
 use Illuminate\Support\Facades\Validator;
 
-Route::get('/', function () {
-    $articles = Article::orderBy('id' , 'desc')->get();
-    return view('index');
-});
-
-Route::get('/about', function () {
-    return view('about');
-});
-
-Route::get('/contact', function () {
-    return view('contact');
-});
+Route::get('/',  'HomController@Home');
+Route::get('/about','HomeController@about');
+Route::get('/contact','HomeController@contact');
 
 
-Route::prefix('admin')->group(function() {
-    Route::get('/task' , function() {
-        return view('admin.task.index' , [
-            'task' => Article::all()
-        ]);
-    });
-    Route::get('/task/create' , function() {
-
-        return view('admin.task.create');
-    });
-    Route::post('/task/create',function() {
-
-        $validate_data = Validator::make(request()->all() , [
-            'title' => 'required|min:10|max:50',
-            'body' => 'required'
-        ])->validated();
+//Route::get('/login','Auth\LoginController');
 
 
-        Article::create([
-            'title' => $validate_data['title'],
-            'slug' => $validate_data['title'],
-            'body' => $validate_data['body'],
-        ]);
+Route::get('/', 'HomeController@home');
+Route::get('/task/{articleSlug}' , 'TaskController@single');
+Route::get('/about', 'HomeController@about');
+Route::get('/contact/asfaf/afasfal', 'HomeController@contact')->name('contact');
 
-        return redirect('/admin/task/create');
-    });
-    Route::get('/task/{id}/edit' , function($id) {
-        $article = Article::findOrFail($id);
 
-        return view('admin.task.edit' , [
-            'article' => $article
-        ]);
-    });
-    Route::put('/task/{id}/edit' , function($id) {
-        $validate_data = Validator::make(request()->all() , [
-            'title' => 'required|min:10|max:50',
-            'body' => 'required'
-        ])->validated();
 
-        $article = Article::findOrFail($id);
-
-        $article->update($validate_data);
-
-        return back();
-    });
-    Route::delete('/task/{id}' , function($id) {
-        $article = Article::findOrFail($id);
-
-        $article->delete();
-
-        return back();
-    });
+Route::prefix('admin')->namespace('Admin')->middleware('auth')->group(function() { //36 rooket.ir آشنایی با کنترلرها
+    Route::get('/task','TaskController@index');
+    Route::get('/task/create' ,'TaskController@create');
+    Route::post('/task/create','TaskController@store');
+    Route::get('/task/{id}/edit' ,'TaskController@edit');
+    Route::put('/task/{id}/edit' ,'TaskController@update');
+    Route::delete('/task/{id}' ,'TaskController@delete');
 });
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    Route::get('/' , function() {
-        return view('index' , [
-            'articles' => Article::all()
-        ]);
-    });
-
+Auth::routes();
